@@ -36,6 +36,16 @@ export interface Photo {
 const LOCAL_DIR = path.join(process.cwd(), "public", "photos");
 const IMAGE_RE = /\.(png|jpe?g|gif|webp|bmp)$/i;
 
+// On-the-fly enhancement applied to the displayed image (not the download). Swap the whole site's
+// look by setting CLOUDINARY_DISPLAY_TX in env — e.g. "e_gen_restore" (AI restore, great on faces),
+// "e_upscale" (AI super-res), or "" to show the raw upload. Default is a safe classic clean-up.
+const DISPLAY_TX =
+  process.env.CLOUDINARY_DISPLAY_TX ?? "e_improve,e_auto_contrast,e_sharpen:80,w_800,q_auto";
+
+function cldTransform(secureUrl: string, tx: string): string {
+  return tx ? secureUrl.replace("/image/upload/", `/image/upload/${tx}/`) : secureUrl;
+}
+
 /** Turn a Cloudinary delivery URL into one that forces a file download. */
 function toCloudinaryDownload(secureUrl: string): string {
   return secureUrl.replace("/image/upload/", "/image/upload/fl_attachment/");
@@ -53,7 +63,7 @@ export async function listPhotos(): Promise<Photo[]> {
       .sort((a, b) => b.created_at.localeCompare(a.created_at)) // newest first
       .map((r) => ({
         name: r.public_id.split("/").pop() ?? r.public_id,
-        url: r.secure_url,
+        url: cldTransform(r.secure_url, DISPLAY_TX),
         downloadUrl: toCloudinaryDownload(r.secure_url),
       }));
   }

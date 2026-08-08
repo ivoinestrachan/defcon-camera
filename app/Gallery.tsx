@@ -15,7 +15,9 @@ interface GalleryProps {
 }
 
 export default function Gallery({ photos }: GalleryProps) {
+  const [items, setItems] = useState<Photo[]>(photos);
   const [active, setActive] = useState<number | null>(null);
+  const [manage, setManage] = useState(false);
   const close = useCallback(() => setActive(null), []);
 
   // Esc to close + lock body scroll while the overlay is open
@@ -33,26 +35,83 @@ export default function Gallery({ photos }: GalleryProps) {
     };
   }, [active, close]);
 
-  const activePhoto = active !== null ? photos[active] : null;
+  async function deletePhoto(photo: Photo) {
+    if (!window.confirm(`Delete "${caption(photo.name, 0)}"? This removes it from the gallery for good.`)) {
+      return;
+    }
+    const send = (token: string) =>
+      fetch("/api/photos", {
+        method: "DELETE",
+        headers: {
+          "Content-Type": "application/json",
+          ...(token ? { "x-admin-token": token } : {}),
+        },
+        body: JSON.stringify({ name: photo.name, url: photo.url }),
+      });
+
+    let token = localStorage.getItem("adminToken") ?? "";
+    let res = await send(token);
+    if (res.status === 401) {
+      token = window.prompt("Enter the admin token to delete photos:") ?? "";
+      if (!token) return;
+      res = await send(token);
+      if (res.ok) localStorage.setItem("adminToken", token);
+    }
+    if (!res.ok) {
+      if (res.status === 401) localStorage.removeItem("adminToken");
+      window.alert(res.status === 401 ? "Wrong admin token." : "Delete failed — try again.");
+      return;
+    }
+    setItems((prev) => prev.filter((p) => p.name !== photo.name));
+    setActive(null);
+  }
+
+  const activePhoto = active !== null ? items[active] : null;
 
   return (
     <>
+      <div className="mb-5 flex items-center justify-between">
+        <span className="font-mono text-[11px] text-[color:var(--muted)]">
+          {items.length} {items.length === 1 ? "frame" : "frames"}
+        </span>
+        <button
+          type="button"
+          onClick={() => setManage((m) => !m)}
+          className="curate-toggle"
+          aria-pressed={manage}
+        >
+          {manage ? "Done" : "Curate"}
+        </button>
+      </div>
+
       <section className="grid grid-cols-2 gap-6 sm:grid-cols-3 sm:gap-8 lg:grid-cols-4">
-        {photos.map((photo, i) => (
+        {items.map((photo, i) => (
           <figure
             key={photo.name}
             className="polaroid"
             style={{ ["--rot" as string]: `${ROTATIONS[i % ROTATIONS.length]}deg` }}
           >
-            <button
-              type="button"
-              className="shot-btn"
-              onClick={() => setActive(i)}
-              aria-label={`View ${caption(photo.name, i)} larger`}
-            >
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src={photo.url} alt={caption(photo.name, i)} className="shot pixelated" />
-            </button>
+            <div className="relative">
+              <button
+                type="button"
+                className="shot-btn"
+                onClick={() => setActive(i)}
+                aria-label={`View ${caption(photo.name, i)} larger`}
+              >
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img src={photo.url} alt={caption(photo.name, i)} className="shot pixelated" />
+              </button>
+              {manage && (
+                <button
+                  type="button"
+                  className="delete-btn"
+                  onClick={() => deletePhoto(photo)}
+                  aria-label={`Delete ${caption(photo.name, i)}`}
+                >
+                  ✕
+                </button>
+              )}
+            </div>
             <figcaption className="px-1 pb-3 pt-3">
               <div className="font-mono text-[11px] tracking-wide text-neutral-700">
                 {caption(photo.name, i)}
@@ -93,14 +152,24 @@ export default function Gallery({ photos }: GalleryProps) {
               <div className="font-mono text-[11px] tracking-wide text-neutral-700">
                 {caption(activePhoto.name, active)}
               </div>
-              <a
-                href={activePhoto.downloadUrl}
-                download={activePhoto.name}
-                className="download-btn"
-                aria-label={`Download ${activePhoto.name}`}
-              >
-                ↓ Download
-              </a>
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={() => deletePhoto(activePhoto)}
+                  className="delete-inline"
+                  aria-label={`Delete ${activePhoto.name}`}
+                >
+                  Delete
+                </button>
+                <a
+                  href={activePhoto.downloadUrl}
+                  download={activePhoto.name}
+                  className="download-btn"
+                  aria-label={`Download ${activePhoto.name}`}
+                >
+                  ↓ Download
+                </a>
+              </div>
             </figcaption>
           </figure>
         </div>

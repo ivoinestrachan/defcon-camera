@@ -1,6 +1,6 @@
 import { promises as fs } from "node:fs";
 import path from "node:path";
-import { put as blobPut } from "@vercel/blob";
+import { del as blobDel, put as blobPut } from "@vercel/blob";
 import {
   blobConfigured,
   cloudinary,
@@ -92,4 +92,39 @@ export async function POST(request: Request): Promise<Response> {
   const name = `cam_${String(n).padStart(3, "0")}.png`;
   await fs.writeFile(path.join(LOCAL_DIR, name), bytes);
   return Response.json({ ok: true, name });
+}
+
+export async function DELETE(request: Request): Promise<Response> {
+  // Gated by ADMIN_TOKEN when set (set it in Vercel so only you can curate the hosted gallery).
+  // When ADMIN_TOKEN is unset (local dev), deletes are open.
+  const requiredToken = process.env.ADMIN_TOKEN;
+  if (requiredToken && request.headers.get("x-admin-token") !== requiredToken) {
+    return Response.json({ error: "unauthorized" }, { status: 401 });
+  }
+
+  let name = "";
+  let url = "";
+  try {
+    ({ name = "", url = "" } = await request.json());
+  } catch {
+    /* bad body handled below */
+  }
+  name = String(name).split("/").pop() ?? "";
+  if (!name) return Response.json({ error: "missing name" }, { status: 400 });
+
+  try {
+    if (cloudinaryConfigured) {
+      const publicId = `${FOLDER}/${name.replace(/\.[a-z0-9]+$/i, "")}`;
+      await cloudinary.uploader.destroy(publicId, { resource_type: "image" });
+      return Response.json({ ok: true });
+    }
+    if (blobConfigured && url) {
+      await blobDel(url);
+      return Response.json({ ok: true });
+    }
+    await fs.rm(path.join(LOCAL_DIR, name), { force: true });
+    return Response.json({ ok: true });
+  } catch (err) {
+    return Response.json({ error: `delete failed: ${String(err)}` }, { status: 502 });
+  }
 }

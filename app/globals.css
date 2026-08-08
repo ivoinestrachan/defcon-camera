@@ -181,6 +181,83 @@ body::before {
   outline-offset: 2px;
 }
 
+/* Curate mode toggle */
+.curate-toggle {
+  font-family: var(--font-mono, ui-monospace, monospace);
+  font-size: 11px;
+  letter-spacing: 0.04em;
+  color: var(--ink);
+  background: var(--panel);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  border-radius: 6px;
+  padding: 5px 12px;
+  cursor: pointer;
+  transition: border-color 0.15s ease;
+}
+.curate-toggle:hover {
+  border-color: var(--acc);
+}
+.curate-toggle[aria-pressed="true"] {
+  border-color: var(--acc);
+  color: var(--acc);
+}
+.curate-toggle:focus-visible {
+  outline: 2px solid var(--acc);
+  outline-offset: 2px;
+}
+
+/* red X on each frame while curating */
+.delete-btn {
+  position: absolute;
+  top: -8px;
+  right: -8px;
+  z-index: 6;
+  width: 26px;
+  height: 26px;
+  border-radius: 999px;
+  border: 2px solid #f7f6f1;
+  background: #e5484d;
+  color: #fff;
+  font-size: 12px;
+  line-height: 1;
+  cursor: pointer;
+  box-shadow: 0 4px 10px -2px rgba(0, 0, 0, 0.6);
+  transition: transform 0.12s ease;
+}
+.delete-btn:hover {
+  transform: scale(1.12);
+}
+.delete-btn:focus-visible {
+  outline: 2px solid #fff;
+  outline-offset: 1px;
+}
+
+/* delete action inside the lightbox */
+.delete-inline {
+  flex: none;
+  font-family: var(--font-mono, ui-monospace, monospace);
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.03em;
+  color: #e5484d;
+  background: transparent;
+  padding: 5px 9px;
+  border: 1px solid #e5484d;
+  border-radius: 5px;
+  cursor: pointer;
+  transition:
+    background 0.15s ease,
+    color 0.15s ease;
+}
+.delete-inline:hover {
+  background: #e5484d;
+  color: #fff;
+}
+.delete-inline:focus-visible {
+  outline: 2px solid #e5484d;
+  outline-offset: 2px;
+}
+
 @media (prefers-reduced-motion: reduce) {
   .polaroid,
   .polaroid:hover {

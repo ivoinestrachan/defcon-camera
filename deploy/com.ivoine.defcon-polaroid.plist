@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+    <key>Label</key>
+    <string>com.ivoine.defcon-polaroid</string>
+
+    <key>ProgramArguments</key>
+    <array>
+        <string>/Library/Frameworks/Python.framework/Versions/3.11/bin/python3</string>
+        <string>/Users/ivoinestrachan/defcon-polaroid/capture.py</string>
+    </array>
+
+    <key>EnvironmentVariables</key>
+    <dict>
+        <key>GALLERY_URL</key>
+        <string>https://defcon-polaroid.vercel.app</string>
+    </dict>
+
+    <key>WorkingDirectory</key>
+    <string>/Users/ivoinestrachan/defcon-polaroid</string>
+
+    <!-- start at login, and keep it alive (restart if it ever exits) -->
+    <key>RunAtLoad</key>
+    <true/>
+    <key>KeepAlive</key>
+    <true/>
+    <key>ThrottleInterval</key>
+    <integer>5</integer>
+
+    <!-- everything it prints goes here so you can check on it -->
+    <key>StandardOutPath</key>
+    <string>/Users/ivoinestrachan/defcon-polaroid/capture.log</string>
+    <key>StandardErrorPath</key>
+    <string>/Users/ivoinestrachan/defcon-polaroid/capture.log</string>
+</dict>
+</plist>

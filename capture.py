@@ -13,12 +13,22 @@ import io
 import json
 import os
 import re
+import ssl
 import sys
 import time
 import urllib.request
 
 import serial
 from PIL import Image, ImageFilter, ImageOps
+
+# python.org's Python ships with no system CA bundle, so HTTPS to the hosted API fails with
+# CERTIFICATE_VERIFY_FAILED. Use certifi's bundle when available so uploads to Vercel work.
+try:
+    import certifi
+
+    _SSL_CTX: "ssl.SSLContext | None" = ssl.create_default_context(cafile=certifi.where())
+except Exception:  # noqa: BLE001
+    _SSL_CTX = ssl.create_default_context()
 
 OUT = os.path.join(os.path.dirname(os.path.abspath(__file__)), "public", "photos")
 GALLERY_URL = os.environ.get("GALLERY_URL", "http://localhost:3000").rstrip("/")
@@ -94,7 +104,7 @@ def save_frame(width: int, rows: list[bytes]) -> str:
             method="POST",
             headers=headers,
         )
-        with urllib.request.urlopen(req, timeout=10) as resp:
+        with urllib.request.urlopen(req, timeout=10, context=_SSL_CTX) as resp:
             name = json.load(resp).get("name", "uploaded")
         return f"uploaded {name} -> {GALLERY_URL}"
     except Exception as exc:  # noqa: BLE001 -- server down? fall back to a local file
@@ -119,8 +129,23 @@ def trigger(ser: serial.Serial) -> None:
     ser.flush()
 
 
+def open_serial_blocking() -> serial.Serial:
+    """Wait for the badge to appear on USB, then open it. Survives being launched before the
+    badge is plugged in (or while it's rebooting)."""
+    announced = False
+    while True:
+        try:
+            return open_serial()
+        except (serial.SerialException, FileNotFoundError, OSError):
+            if not announced:
+                print("waiting for the badge — plug it into USB (Ctrl+C to stop)...", flush=True)
+                announced = True
+            time.sleep(1.5)
+
+
 def run(snap: bool) -> int:
-    ser = open_serial()
+    ser = open_serial_blocking()
+    print(f"connected on {ser.port} -> uploading to {GALLERY_URL}", flush=True)
     if snap:
         trigger(ser)
     else:

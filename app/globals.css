@@ -72,6 +72,20 @@ body::before {
   display: block;
   object-fit: cover;
   filter: contrast(1.08);
+  /* each frame "develops" in like a real polaroid, staggered across the roll */
+  animation: polaroid-develop 2.4s ease-out both;
+  animation-delay: min(calc(var(--i, 0) * 0.12s), 1.6s);
+}
+@keyframes polaroid-develop {
+  0% {
+    filter: brightness(0.04) contrast(2.2) sepia(0.35);
+  }
+  40% {
+    filter: brightness(0.3) contrast(1.6) sepia(0.15);
+  }
+  100% {
+    filter: contrast(1.08);
+  }
 }
 /* download button on each polaroid */
 .download-btn {
@@ -265,6 +279,9 @@ body::before {
     transform: none;
   }
   .lightbox {
+    animation: none;
+  }
+  .polaroid .shot {
     animation: none;
   }
 }

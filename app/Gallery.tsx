@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { type CSSProperties, useCallback, useEffect, useState } from "react";
 import type { Photo } from "@/lib/photos";
 
 const IMAGE_RE = /\.(png|jpe?g|gif|webp|bmp)$/i;
@@ -89,7 +89,12 @@ export default function Gallery({ photos }: GalleryProps) {
           <figure
             key={photo.name}
             className="polaroid"
-            style={{ ["--rot" as string]: `${ROTATIONS[i % ROTATIONS.length]}deg` }}
+            style={
+              {
+                ["--rot" as string]: `${ROTATIONS[i % ROTATIONS.length]}deg`,
+                ["--i" as string]: i,
+              } as CSSProperties
+            }
           >
             <div className="relative">
               <button

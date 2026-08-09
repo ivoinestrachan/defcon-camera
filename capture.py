@@ -81,8 +81,13 @@ def enhance(img: Image.Image) -> Image.Image:
     left, top = (img.width - side) // 2, (img.height - side) // 2
     img = img.crop((left, top, left + side, top + side))
     img = ImageOps.autocontrast(img, cutoff=1)
-    img = img.resize((512, 512), Image.LANCZOS)
-    img = img.filter(ImageFilter.UnsharpMask(radius=2, percent=160, threshold=2))
+    # upscale tiny frames for legibility, but NEVER downscale a big capture -- keep the real detail
+    target = max(512, side)
+    if img.width != target:
+        img = img.resize((target, target), Image.LANCZOS)
+    # heavy sharpening helps the tiny sources; lighter on big ones (unsharp haloes high-res badly)
+    percent = 160 if side < 400 else 90
+    img = img.filter(ImageFilter.UnsharpMask(radius=2, percent=percent, threshold=2))
     return img
 
 

@@ -40,7 +40,7 @@ const IMAGE_RE = /\.(png|jpe?g|gif|webp|bmp)$/i;
 // look by setting CLOUDINARY_DISPLAY_TX in env — e.g. "e_gen_restore" (AI restore, great on faces),
 // "e_upscale" (AI super-res), or "" to show the raw upload. Default is a safe classic clean-up.
 const DISPLAY_TX =
-  process.env.CLOUDINARY_DISPLAY_TX ?? "e_improve,e_auto_contrast,e_sharpen:80,w_800,q_auto";
+  process.env.CLOUDINARY_DISPLAY_TX ?? "e_gen_restore,e_improve,e_sharpen:40,q_auto";
 
 function cldTransform(secureUrl: string, tx: string): string {
   return tx ? secureUrl.replace("/image/upload/", `/image/upload/${tx}/`) : secureUrl;

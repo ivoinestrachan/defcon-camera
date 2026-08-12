@@ -32,7 +32,7 @@ to catch, *then* you've "met." Everyone doing the exact same dance.
 
 But there's a **real camera** in the badge, and the only thing anyone pointed it at was a QR code.
 Nobody was taking *photos* — all that hardware used as a barcode reader. I didn't want to scan people's
-codes; it's slow, and it's what everyone else was already doing. I wanted to be **faster**, and I wanted
+codes, it's slow, and it's what everyone else was already doing. I wanted to be **faster**, and I wanted
 the camera to do something nobody was using it for: point it at a person, press a button, done.
 **Turn the scanner into a camera.**
 
@@ -218,7 +218,7 @@ explicitly**:
 | `BADGE_UPLOAD_TOKEN` | Must match the gallery's `UPLOAD_TOKEN`, if set. |
 
 To keep the bridge always-on: macOS → the launchd config in [`deploy/`](./deploy) (edit the paths +
-`GALLERY_URL` first); Windows → Task Scheduler; Linux → a systemd user service.
+`GALLERY_URL` first), Windows → Task Scheduler, Linux → a systemd user service.
 
 ### 5 · Shoot
 
@@ -246,7 +246,7 @@ frame streams over serial, `capture.py` uploads it, and it lands on your gallery
 **Lights** — a custom LED show:
 
 - `dc34-console/src/leds.rs` — registers the LED server and drives the `Lightgenes` generative animation.
-- `dc34-console/src/motion.rs` — a dot races the ring, then it flashes, on repeat; a `MOTION_PAUSE`
+- `dc34-console/src/motion.rs` — a dot races the ring, then it flashes, on repeat, a `MOTION_PAUSE`
   flag **freezes the LEDs during a capture** so glare doesn't pollute the frame.
 
 <div align="center">
@@ -331,7 +331,7 @@ Why it's shaped the way it is:
   recipe every time.
 - **Respect boundaries you can't see.** Sharing the accelerometer with the LEDs broke sleep/wake —
   ownership is load-bearing, so the LED driver stays "LEDs only."
-- **Spend resource where it's cheap.** Capture small on the badge; manufacture the resolution downstream
+- **Spend resource where it's cheap.** Capture small on the badge, manufacture the resolution downstream
   where compute is abundant.
 - **Design for the failure path.** Self-syncing frame markers and a bridge that reconnects — desync and
   disconnect are assumed, not hoped against.

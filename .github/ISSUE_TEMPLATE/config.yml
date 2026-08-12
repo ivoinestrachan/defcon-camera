@@ -1,0 +1,8 @@
+blank_issues_enabled: true
+contact_links:
+  - name: 🖼️ Gallery / website issues
+    url: https://github.com/ivoinestrachan/defcon-polaroid/issues
+    about: The web polaroid wall lives in the defcon-polaroid repo — file gallery bugs & ideas there.
+  - name: 📖 Badge / Xous docs
+    url: https://baochip.github.io/baochip-1x/
+    about: Reference docs for the Baochip bao1x badge and Xous OS.

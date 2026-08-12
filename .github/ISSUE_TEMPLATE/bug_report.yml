@@ -1,0 +1,60 @@
+name: "🐛 Bug report"
+description: Something in the firmware, flashing, or the capture bridge isn't working.
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for filing a bug! This repo is the **badge side** (firmware + bridge).
+        For the **web gallery**, please file at
+        [defcon-polaroid](https://github.com/ivoinestrachan/defcon-polaroid/issues) instead.
+  - type: dropdown
+    id: area
+    attributes:
+      label: Which part?
+      options:
+        - Badge firmware (camera capture)
+        - Badge firmware (LEDs / lights)
+        - Flashing / boot mode ("bootloader dance")
+        - Host bridge (capture.py)
+        - Build / toolchain (cargo xtask)
+        - Docs / README
+        - Other
+    validations:
+      required: true
+  - type: textarea
+    id: what-happened
+    attributes:
+      label: What happened?
+      description: What did you expect, and what happened instead?
+    validations:
+      required: true
+  - type: textarea
+    id: repro
+    attributes:
+      label: Steps to reproduce
+      placeholder: |
+        1. Built with `cargo build --release --features ...`
+        2. Entered boot mode, copied UF2s
+        3. Ran `python3 capture.py`, pressed the camera button
+        4. ...
+    validations:
+      required: true
+  - type: textarea
+    id: badge-state
+    attributes:
+      label: Badge / host state
+      description: Helps a lot for flashing & serial issues.
+      value: |
+        - Serial device present? (`ls /dev/cu.usbmodem*`):
+        - `BAOCHIP` mounted? (`ls /Volumes/ | grep -i BAOCHIP`):
+        - Batteries in or out:
+        - USB-C cable (data-capable? short?):
+        - macOS version:
+        - Python version (`python3 --version`):
+  - type: textarea
+    id: logs
+    attributes:
+      label: Logs
+      description: Paste the tail of `capture.log` and/or the badge serial console output.
+      render: shell

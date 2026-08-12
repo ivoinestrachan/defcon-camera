@@ -4,8 +4,9 @@
 
 ### Turn a DEF CON 34 badge into a camera — 1-bit photos, streamed off the badge to a live polaroid wall.
 
-<!-- Drop a hero gif/screenshot at assets/hero.gif for the full look:
-<img src="assets/hero.gif" width="720" alt="badge → gallery demo"> -->
+<img src="https://placehold.co/1000x360/0d0f1e/ff2d55/png?text=HERO+PHOTO" alt="hero photo — replace me" width="720" /><br/>
+<sub>📸 <b>Shot to take:</b> the badge in-hand with its LED ring lit + a few 1-bit prints fanned beside it (a short gif of a photo developing on the wall is even better).</sub>
+<!-- Replace the src above with assets/hero.png or assets/hero.gif once you've taken it. -->
 
 <p align="center">
   <a href="https://defcon-polaroid.vercel.app"><img src="https://img.shields.io/badge/Live_Gallery-online-ff2d55?style=for-the-badge" alt="Live Gallery"></a>
@@ -26,13 +27,23 @@
 
 ## Overview
 
-```
-  badge firmware (this repo)        host bridge (this repo)     web gallery (defcon-polaroid)
-┌───────────────────────────┐      ┌────────────┐              ┌──────────────────┐
-│ bao-video service dumps a  │ USB  │ capture.py │   HTTPS      │ Next.js polaroid  │
-│ frame: PHOTOSTART/PHOTO/… ├──────▶│ enhances + ├─────────────▶│ wall (linked out) │
-│ + a custom LED show        │serial│ uploads PNG│              └──────────────────┘
-└───────────────────────────┘      └────────────┘
+```mermaid
+flowchart LR
+    subgraph CAM ["🎥 defcon-camera · this repo"]
+        direction LR
+        A("📷 <b>Badge firmware</b><br/>bao-video dumps a frame<br/>PHOTOSTART · PHOTO · PHOTOEND<br/>+ a custom LED show")
+        B("🔌 <b>Host bridge</b><br/>capture.py<br/>enhances + uploads PNG")
+        A -->|"USB · serial"| B
+    end
+    B ==>|"HTTPS"| C("🖼️ <b>Web gallery</b><br/>Next.js polaroid wall<br/>defcon-polaroid ↗")
+
+    classDef badge fill:#1b1030,stroke:#6e40c9,stroke-width:2px,color:#e9ebf6
+    classDef bridge fill:#101a2e,stroke:#5aa2ff,stroke-width:2px,color:#e9ebf6
+    classDef gallery fill:#2a0f1a,stroke:#ff2d55,stroke-width:2px,color:#e9ebf6
+    class A badge
+    class B bridge
+    class C gallery
+    style CAM fill:#0d0f1e,stroke:#2b2f45,color:#c3c8dd
 ```
 
 | Path | What it is |
@@ -108,6 +119,12 @@ On later updates, if the loader/kernel are unchanged you can copy just `apps.uf2
 use a short **data** USB-C cable and retry. The ROM bootloader is always reachable, so a bad flash is
 recoverable, **not** a brick.
 
+<div align="center">
+<img src="https://placehold.co/900x300/0d0f1e/5aa2ff/png?text=BOOT+MODE" alt="boot mode photo — replace me" width="640" /><br/>
+<sub>📸 <b>Shot to take:</b> the <code>BAOCHIP</code> drive mounted on your desktop with the badge plugged in — proof it's in boot mode.</sub>
+</div>
+<!-- Replace the src with assets/boot-mode.png -->
+
 ### 4 · Run the bridge
 
 Connect the badge over a **data** USB-C cable, then:
@@ -132,6 +149,12 @@ Press the badge's **camera button** (or run `test photo` on the badge console). 
 frame streams over serial, `capture.py` uploads it, and it lands on your
 **[gallery wall](https://defcon-polaroid.vercel.app)**.
 
+<div align="center">
+<img src="https://placehold.co/900x300/0d0f1e/39d98a/png?text=SAMPLE+SHOTS" alt="sample captures — replace me" width="640" /><br/>
+<sub>📸 <b>Shot to take:</b> a grid of a few 1-bit photos the badge actually took — screenshot the gallery wall, or drop in the PNGs.</sub>
+</div>
+<!-- Replace the src with assets/samples.png -->
+
 * * *
 
 ## What we changed
@@ -149,6 +172,12 @@ frame streams over serial, `capture.py` uploads it, and it lands on your
 - `dc34-console/src/leds.rs` — registers the LED server and drives the `Lightgenes` generative animation.
 - `dc34-console/src/motion.rs` — a dot races the ring, then it flashes, on repeat; a `MOTION_PAUSE`
   flag **freezes the LEDs during a capture** so glare doesn't pollute the frame.
+
+<div align="center">
+<img src="https://placehold.co/900x300/0d0f1e/ff9e40/png?text=LED+RING" alt="LED show photo — replace me" width="640" /><br/>
+<sub>📸 <b>Shot to take:</b> the LED ring mid-show — the racing dot / rainbow chase (a gif is even better).</sub>
+</div>
+<!-- Replace the src with assets/leds.gif or assets/leds.png -->
 
 ## The gallery
 

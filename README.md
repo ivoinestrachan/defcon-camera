@@ -164,6 +164,57 @@ frame streams over serial, `capture.py` uploads it, and it lands on your
 </div>
 <!-- Replace the src with assets/leds.gif or assets/leds.png -->
 
+## Camera & tuning
+
+### Resolution
+
+The badge's sensor is a **[GalaxyCore GC2145](https://www.gophotonics.com/products/cmos-image-sensors/galaxycore-microelectronics/21-117-gc2145)** —
+a 2 MP CMOS sensor with a native **1600×1200 (UXGA @ 15 fps)** array that also outputs **800×600
+(SVGA @ 30 fps)**, VGA, and smaller ([datasheet](https://e2e.ti.com/cfs-file/__key/communityserver-discussions-components-files/968/GC2145-CSP-DataSheet-release-V1.0_5F00_20131201.pdf)).
+
+Today the firmware runs it **small on purpose**, for speed and RAM:
+
+- The sensor is initialized at **320×240**, then center-cropped to **256×240** (`IMAGE_WIDTH × IMAGE_HEIGHT` in `bao-video/src/main.rs`).
+- On capture it's **downsampled 2× → 128×120 grayscale** and streamed as hex over the serial log (`PHOTOSTART / PHOTO / PHOTOEND`).
+
+That tiny size keeps the on-chip frame buffer small and the serial dump fast.
+
+**Can you get 800×600?** Yes — SVGA is a native GC2145 mode, and the driver
+(`bao1x-hal/src/gc2145/gc2145.rs`) already windows/subsamples down from the 1600×1200 array via
+`set_resolution(w, h)`. Roughly what it takes:
+
+1. Add a `Resolution::Res800x600` variant (bao1x-api camera enum) and select it in `cam.init(...)`.
+2. Bump `IMAGE_WIDTH` / `IMAGE_HEIGHT`, the `frame` buffer, and the `set_slicing(...)` crop in `bao-video`.
+3. Drop the 2× downsample in the PHOTO dump (or keep it for a 400×300 shot).
+
+Trade-offs: 800×600 is ~25× the pixels of 128×120, so the frame buffer (RAM/IFRAM) grows a lot and
+each serial dump takes much longer. `capture.py` already handles any frame size, so the host side
+needs no changes.
+
+### How the "resolution thing" works on the website
+
+The native grab is tiny, so the **sharp, big photos on the wall come from the host + gallery**, not
+the sensor:
+
+1. **`capture.py`** center-crops to square, autocontrasts, **upscales to ≥512 px with LANCZOS**, and
+   unsharp-masks — turning a 128×120 frame into a clean 512 px PNG before upload.
+2. **The gallery** applies an on-the-fly Cloudinary transform — `e_gen_restore,e_improve,e_sharpen:40,q_auto`
+   (**AI restore + upscale**), swappable via the `CLOUDINARY_DISPLAY_TX` env var (`e_upscale` for AI
+   super-res, or `""` for the raw upload).
+
+So you get big, sharp-*looking* shots off a 128×120 grab. Bumping the on-badge resolution to 800×600
+would give **real** detail instead of upscaled detail.
+
+### LED animation speed
+
+Two knobs:
+
+- **Live, over serial:** `test rate <0-255>` sets the `Lightgenes` mutation rate — how fast the LED
+  "genes" evolve. No reflash needed.
+- **In firmware (rebuild):** `motion.rs` sets the base tempo — *"milliseconds per color flip; 80 ms is
+  the proven-stable rate"* — alongside the `cd_rate` / `hue_ratedir` params in `cmds/test.rs`. Change
+  and reflash to retune.
+
 ## The gallery
 
 The web wall is its own project: **[github.com/ivoinestrachan/defcon-polaroid](https://github.com/ivoinestrachan/defcon-polaroid)**
@@ -182,9 +233,3 @@ Built on the work of **[bunnie Huang](https://github.com/bunnie)** (the DC34 bad
 The bridge (`capture.py`) and docs here are free to use. The firmware in [`firmware/`](./firmware) is
 **derived from the upstream repos above and remains under their respective licenses** — check each
 project before redistributing.
-
-<div align="center">
-
-*shot on a hacked Baochip badge* 🔋
-
-</div>

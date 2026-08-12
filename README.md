@@ -2,7 +2,7 @@
 
 # DEFCON / CAMERA
 
-### Turn your DEF CON badge into a camera?
+### Turn your DEF CON badge into a camera.
 
 <img src="https://placehold.co/1000x360/0d0f1e/ff2d55/png?text=HERO+PHOTO" alt="hero photo — replace me" width="720" /><br/>
 <sub><b>Shot to take:</b> the badge in-hand with its LED ring lit + a few 1-bit prints fanned beside it (a short gif of a photo developing on the wall is even better).</sub>

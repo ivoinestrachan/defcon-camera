@@ -27,24 +27,9 @@
 
 ## Overview
 
-```mermaid
-flowchart LR
-    subgraph CAM ["🎥 defcon-camera · this repo"]
-        direction LR
-        A("📷 <b>Badge firmware</b><br/>bao-video dumps a frame<br/>PHOTOSTART · PHOTO · PHOTOEND<br/>+ a custom LED show")
-        B("🔌 <b>Host bridge</b><br/>capture.py<br/>enhances + uploads PNG")
-        A -->|"USB · serial"| B
-    end
-    B ==>|"HTTPS"| C("🖼️ <b>Web gallery</b><br/>Next.js polaroid wall<br/>defcon-polaroid ↗")
-
-    classDef badge fill:#1b1030,stroke:#6e40c9,stroke-width:2px,color:#e9ebf6
-    classDef bridge fill:#101a2e,stroke:#5aa2ff,stroke-width:2px,color:#e9ebf6
-    classDef gallery fill:#2a0f1a,stroke:#ff2d55,stroke-width:2px,color:#e9ebf6
-    class A badge
-    class B bridge
-    class C gallery
-    style CAM fill:#0d0f1e,stroke:#2b2f45,color:#c3c8dd
-```
+<div align="center">
+  <img src="assets/overview.svg" alt="badge firmware → host bridge → web gallery" width="820" />
+</div>
 
 | Path | What it is |
 |------|-----------|

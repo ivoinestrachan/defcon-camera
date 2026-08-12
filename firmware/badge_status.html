@@ -1,0 +1,160 @@
+<title>DC34 Badge Hack — Live Status</title>
+<style>
+:root{
+  --ink:#0d0f1e; --panel:#161a30; --panel2:#1b2039; --line:rgba(255,255,255,.09);
+  --fg:#e9ebf6; --muted:#969db9; --dim:#6b7291;
+  --done:#39d98a; --build:#ffb545; --you:#5aa2ff; --neutral:#9aa0b8;
+  --mono:ui-monospace,"SF Mono","JetBrains Mono",Menlo,Consolas,monospace;
+  --sans:system-ui,-apple-system,"Segoe UI",sans-serif;
+}
+*{box-sizing:border-box}
+body{margin:0}
+.wrap{max-width:1040px;margin:0 auto;padding:0 20px 56px;color:var(--fg);
+  background:radial-gradient(1200px 600px at 70% -10%,#1a1f3a 0%,var(--ink) 55%);
+  font-family:var(--sans);line-height:1.55;min-height:100vh}
+.accent{height:3px;margin:0 -20px 30px;background:linear-gradient(90deg,#ff4d4d,#ff9e40,#ffe14d,#4dff88,#4dd2ff,#9a6bff,#ff5ec4);opacity:.9}
+code{font-family:var(--mono)}
+
+header{padding-top:34px}
+.eyebrow{font-family:var(--mono);font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted)}
+h1{font-family:var(--mono);font-weight:600;font-size:clamp(26px,4.4vw,40px);letter-spacing:-.01em;margin:.5rem 0 .4rem;text-wrap:balance}
+.sub{max-width:64ch;color:#c3c8dd;margin:.2rem 0 0}
+.sub code{color:#dfe4f5;background:var(--panel2);padding:1px 6px;border-radius:5px;font-size:.86em}
+.chips{display:flex;gap:10px;flex-wrap:wrap;margin-top:18px}
+.chip{font-family:var(--mono);font-size:12.5px;padding:5px 12px;border-radius:999px;border:1px solid var(--line);background:var(--panel)}
+.chip.done{color:var(--done);border-color:color-mix(in srgb,var(--done) 40%,transparent)}
+.chip.build{color:var(--build);border-color:color-mix(in srgb,var(--build) 40%,transparent)}
+.chip.you{color:var(--you);border-color:color-mix(in srgb,var(--you) 40%,transparent)}
+
+.grid{display:grid;grid-template-columns:repeat(2,1fr);gap:16px;margin-top:26px}
+.card{background:linear-gradient(180deg,var(--panel),#12162a);border:1px solid var(--line);border-radius:12px;padding:18px 18px 20px}
+.card.wide{grid-column:1/-1}
+.chead{display:flex;align-items:center;gap:11px;margin-bottom:12px}
+.chead h2{font-family:var(--mono);font-size:16px;font-weight:600;margin:0;letter-spacing:-.01em}
+.pill{font-family:var(--mono);font-size:11px;text-transform:uppercase;letter-spacing:.08em;padding:3px 9px;border-radius:6px;white-space:nowrap}
+.pill.done{color:#05130c;background:var(--done)}
+.pill.build{color:#1a1200;background:var(--build)}
+.pill.you{color:#04122b;background:var(--you)}
+.pill.neutral{color:#0c0f1c;background:var(--neutral)}
+.card p{margin:.55rem 0 0;color:#c3c8dd;font-size:14.5px}
+.card p code{color:#e6eaf8;background:var(--panel2);padding:1px 5px;border-radius:4px;font-size:.86em}
+
+.shot{display:flex;justify-content:center;padding:14px;background:#05060d;border:1px solid var(--line);border-radius:9px}
+.shot img{width:150px;height:150px;image-rendering:pixelated;border-radius:3px;filter:drop-shadow(0 0 12px rgba(120,150,255,.18))}
+
+.leds{display:flex;gap:9px;justify-content:center;padding:16px 6px 6px}
+.leds i{width:21px;height:21px;border-radius:50%;
+  background:hsl(calc(var(--i)*36) 92% 56%);
+  box-shadow:0 0 10px hsl(calc(var(--i)*36) 92% 56% / .8);
+  animation:chase 3s linear infinite;animation-delay:calc(var(--i)*-.3s)}
+@keyframes chase{to{filter:hue-rotate(360deg)}}
+
+pre{margin:.7rem 0 0;background:#05060d;border:1px solid var(--line);border-radius:8px;padding:12px 13px;overflow-x:auto}
+pre code{font-size:12.5px;color:#cdd4ee;line-height:1.5}
+pre code b{color:#ff9e40;font-weight:700}
+pre.cmd code{color:#8fe3b4;white-space:pre-wrap;word-break:break-all}
+
+.swap{display:flex;align-items:center;gap:12px;margin-top:14px;font-family:var(--mono);font-size:13px}
+.swap .was{color:var(--muted);text-decoration:line-through;opacity:.7}
+.swap .arrow{color:var(--build)}
+.swap .now{color:var(--done)}
+
+.steps{list-style:none;margin:.3rem 0 0;padding:0;display:flex;flex-direction:column;gap:9px}
+.steps li{position:relative;padding-left:26px;font-size:14px;color:#cdd2e6}
+.steps li::before{position:absolute;left:0;top:1px;font-family:var(--mono);font-weight:700}
+.steps li.ok::before{content:"\2713";color:var(--done)}
+.steps li.run::before{content:"\25B8";color:var(--build);animation:blink 1.3s ease-in-out infinite}
+.steps li.wait::before{content:"\25CB";color:var(--dim)}
+.steps li b{color:#fff}
+.muted{color:var(--build);font-family:var(--mono);font-size:12px}
+@keyframes blink{50%{opacity:.35}}
+.warn{margin-top:14px;font-size:13px;color:#ffce8a;background:color-mix(in srgb,var(--build) 12%,transparent);border:1px solid color-mix(in srgb,var(--build) 30%,transparent);padding:9px 11px;border-radius:8px}
+
+.repos{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin-top:6px}
+.repos a{display:flex;flex-direction:column;gap:2px;padding:11px 13px;background:var(--panel2);border:1px solid var(--line);border-radius:8px;font-family:var(--mono);font-size:13.5px;color:#e4e8f7;text-decoration:none;transition:border-color .15s,transform .15s}
+.repos a span{font-family:var(--sans);font-size:12px;color:var(--muted)}
+.repos a:hover{border-color:color-mix(in srgb,var(--you) 55%,transparent);transform:translateY(-1px)}
+.repos a:focus-visible{outline:2px solid var(--you);outline-offset:2px}
+
+footer{margin-top:30px;text-align:center;font-family:var(--mono);font-size:12px;color:var(--muted);letter-spacing:.04em}
+
+@media (max-width:720px){.grid{grid-template-columns:1fr}.repos{grid-template-columns:1fr}}
+@media (prefers-reduced-motion:reduce){.leds i,.steps li.run::before{animation:none}}
+</style>
+<div class="wrap">
+  <div class="accent"></div>
+  <header>
+    <div class="eyebrow">DEF CON 34 · Baosec badge · Baochip&#8209;1x SoC · Xous OS</div>
+    <h1>Badge hack &mdash; what we&rsquo;ve built</h1>
+    <p class="sub">Everything driven over the USB serial console at <code>/dev/cu.usbmodemS5NA273</code>. Two things are already live on your screen. The rainbow needs one custom firmware flash.</p>
+    <div class="chips">
+      <span class="chip done">2 shipped</span>
+      <span class="chip build">2 building</span>
+      <span class="chip you">1 needs you</span>
+    </div>
+  </header>
+
+  <section class="grid">
+
+    <article class="card">
+      <div class="chead"><span class="pill done">Shipped</span><h2>Signal QR &rarr; screen</h2></div>
+      <div class="shot"><img alt="Signal QR uploaded to badge" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAYAAAAGAAQAAAACMvIgSAAADX0lEQVR4nO2bMbLjLBCEe+QAZT7C6CY62QrQnsw3gSM4GwLTf4DsJ7veBhvss+o3BK6yS1/VQImhpwcL8Xdj+MvnO9CBDnSgAx3oQAc60IEOdOB/ARQRkQFAkYDsR3DMA4AyRRGR6Q0hHRFQkqFIcPSjnq5yus61SACEpL0lpMMA4DZMAzQa4JInK5TWvjIaxPT+3AHn8AbAX+cBWAG4xDPrAUJ6P/DyLpHVJThWlxaXxDT0d+kZ8ExAjtc5XicxiGlwl7bp6rfAvw/peEAWkVDm9sNa5qFMKHMoE0VkfEtIhwEeO+6+7yKTJ6tjNG05/PmJA87hR/MSyWhYoGTyptHgmRZAmOD6Km0jAN40AJ5JmAANLsGlJqX6KvGuG4WMZHAkN9UUDYvjp6/STnsH4JdMKJNcJ44qI4SJI9Yi/sMrlOfsHaABAOC3pKQkY5Pi/V0CAKyAt0ymxXGADmWOhhU5lOl3r+Puo7oEaHWMZHUkkzBJz0t7oEiA0vLpOrUf1jLfRg0AyhQ/XFXusvfJsAI8JwAoEtwlWq4uodUpbwjpMMBOVbZd5pv8Nq2AmNKAJwV+wDn8aB13uk4rAIAy+zEP0Nv5ImcG5PCekA4IqB/zbWx6+zI4RsuhzLXIzqj84ZAOA+z1kkEMC7Q60rBAmw6v/Yzb5aXYko9BmIQk08PdjR++Sg/AXSqyjFgBQEOR5i8NZQLyp7twz6rSG6RVu9bc3c1o+vQz7sVfYlocK7S2T2iF9lV6XqW0uNYdSN4AaMVmevsPz0tfO26zJX073QyeX8vVz7jHiEwL4E2ra0bclpcC0B3dx46rLgk3C7e5lGLaGnN9lfZ5qe2yxTE224TbAffpeunJ927lCUm2lm67JOB7b3dXx1VkmoYyrWUSw68zo4GjDtBb95e+hopMC7AgV+QBoEhF9mM+Mb0ppGMA3/R2GaDVtdZAauZS/fDsvXN0RWRwiSIV+H2dTwbK5A0rcvcqXysUQLaaTkNr7D41CA44hx8Fokxo97uQhzJxzNGwIMuow7fAvw/pqICGe50bXKLMJ7K6tLwzpAMCOVoWkcjLyTQg30SG3rV8zUtswvJxc6m5u5+uKl/unLSLgs0qMbRqJXTnRPpfiTvQgQ50oAMd6EAHOtCBDnTgz+M/lUTWofj6CggAAAAASUVORK5CYII="></div>
+      <p>Generated from your Signal link, packed to a 128&times;128 1&#8209;bit bitmap and pushed in 32/32 CRC&#8209;checked chunks. Reversible with <code>image clear</code>.</p>
+    </article>
+
+    <article class="card">
+      <div class="chead"><span class="pill done">Shipped</span><h2>Fox logo &rarr; screen</h2></div>
+      <div class="shot"><img alt="Fox logo as shown on badge" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAYAAAAGAAQAAAACMvIgSAAADQUlEQVR4nO2aMY6bQBSGfzKRSGWS3pL3CtvRkS7X8QlsNgdYk+OkYyu7i5QTEK0PwLrCEvCnGAw2xtJiGGZWmq/xs8Xz/2vmMYzfGLBYLBaLxWKxWCwWy8dldRY7Wecln/p+58CEcxsrV4VCXwSZnMXjKAyzhDXzU7gww5IgGcrQpSGW0oCpDF2mwTgKQxN2mMnAR6RGoXfCsXp1YlUKPRElFowBwGMOMybuAMAHgCX2ahTewefW+z1ceac9jKUwLKF4RhHK8Nhx7QgKvRElsKYEjhHrElYQrC2Z8dgF8ibQ9dht7QTiOhRhdzlNPXHelg26Jq5l6cyRXDM1WLpeKtUq9E6YKVf4mAmXrGlAebdq6aUO9z//qFDoj3+66bJbdaVh7/1Ekixhyt6bZOqSZBoYYglrkjGrsTKjvAG5qyxKlQq9EiLg7ccDsH/7AuyMsHQAIuwB8axKoTcOSb6SguSNuZt6lPgFQBFijpuPYC1PoLn8LRCpU+jHgszXGdm0UIYqDLYkyNzLbq2T9ygMTihCYAmtv+OuEiII5+aiNImlNiIN8pnP1E3GUhhe3qWbrLPFU9O0HKowwh0XCxKeUZYoSGHSIkAyX2cLkyxJM0YtlSRZBsZZkoQjKfROcNqWTkHRbhneqzA0oekpiVCNgk2wCdMltHC5OS0CqS5LtxJejDlpqnGxVKxwR0KkXOGd5FV/Kdb3jGuv3iJE8fVFBpostQi4ITcZuWUJzIK5dksOuWHuxdJSZ0NeS99bhD5whLMFgKvjVC13XBHuABd4lG8TvZaWQDVKDa1y0nCsU9cSM5KLq+2l7lE61h9OaOmSZpRiMj41nCe21LXDXvqAC/jFtxJoHz9puOMOQCTbJrv96upyLaM0a2op+KvF0iUXq7ebeNV5yrSWOiauGqWD/6BGoV8Cv2MmV2/g1+/OXZzGnUDuxUCgY+JauHUt5StAtgjSiS3dqqXjXtvpQIsg8Zh7WzITIaqJCye2dJngxCKFCB8Bt0iVKNybsAMwn1X/ivkXTmypRVAfWIinTE5cMlBhsKVXkpuY5GsaJMD1Ca+eYx1UJ/KdnYHpLdV/YmzigQojWLJYLBaLxWKxWCwWS81/+vPkt4+WTQAAAAAASUVORK5CYII="></div>
+      <p>Your <code>image&nbsp;1.png</code>, Floyd&ndash;Steinberg dithered to black&amp;white and uploaded. It&rsquo;s on the badge now &mdash; the screen is 1&#8209;bit, so no color or GIFs.</p>
+    </article>
+
+    <article class="card">
+      <div class="chead"><span class="pill build">Building</span><h2>Rainbow LEDs</h2></div>
+      <div class="leds" aria-label="rainbow LED strip preview">
+        <i style="--i:0"></i><i style="--i:1"></i><i style="--i:2"></i><i style="--i:3"></i><i style="--i:4"></i><i style="--i:5"></i><i style="--i:6"></i><i style="--i:7"></i><i style="--i:8"></i><i style="--i:9"></i>
+      </div>
+      <p>No live path &mdash; the LED commands are compiled out of stock firmware, and the strip (BIO pin 15) is walled off from the user&#8209;BIO sandbox (pins 21/22/30/31). So we add a gene:</p>
+      <pre><code>Haploid { hue_base: <b>0</b>, hue_bound: <b>255</b>,
+         sat: 255, /* full spectrum */ }</code></pre>
+    </article>
+
+    <article class="card">
+      <div class="chead"><span class="pill build">Building</span><h2>Skull removed &mdash; fox only</h2></div>
+      <p>Conference mode alternates the DEF&nbsp;CON skull with your image every 3s. Patched the vault&rsquo;s idle loop (<code>ux.rs</code>) to always draw the fox, never the skull.</p>
+      <div class="swap"><span class="was">skull &#10005; fox</span><span class="arrow">&rarr;</span><span class="now">fox only</span></div>
+    </article>
+
+    <article class="card wide">
+      <div class="chead"><span class="pill build">Building</span><h2>Firmware pipeline</h2></div>
+      <ul class="steps">
+        <li class="ok">Custom RISC&#8209;V Xous toolchain installed</li>
+        <li class="ok">All dependencies compiled &amp; cached</li>
+        <li class="ok">Fixed stale dep pin &mdash; xous&#8209;core was pinned to a <b>March</b> rev; badge code is <b>July</b>. Bumped to the <code>dev</code> branch.</li>
+        <li class="run">Recompile console + vault <span class="muted">&larr; re&#8209;run needed</span></li>
+        <li class="wait">Package &rarr; xous.uf2 / swap.uf2 / loader.uf2</li>
+        <li class="wait">Flash via update mode (hold button + reset)</li>
+      </ul>
+      <p class="warn">Heads up: flashing wipes the light&#8209;breeding key &amp; enters dev mode. Stock recovery firmware is already downloaded and ready.</p>
+    </article>
+
+    <article class="card wide">
+      <div class="chead"><span class="pill you">Your move</span><h2>Re&#8209;run the build</h2></div>
+      <p>Nothing is compiling right now &mdash; the harness won&rsquo;t let me run external build code, so you kick it (I watch + fix):</p>
+      <pre class="cmd"><code>!bash /private/tmp/claude-501/-Users-ivoinestrachan/5617a64a-d55c-4d98-9419-40e73989487a/scratchpad/build_rainbow.sh</code></pre>
+    </article>
+
+    <article class="card wide src">
+      <div class="chead"><span class="pill neutral">Open source</span><h2>The stack on GitHub</h2></div>
+      <div class="repos">
+        <a href="https://github.com/bunnie/dc34-vault" target="_blank" rel="noopener">bunnie/dc34&#8209;vault<span>badge UI · QR · light breeding</span></a>
+        <a href="https://github.com/bunnie/dc34-console" target="_blank" rel="noopener">bunnie/dc34&#8209;console<span>REPL &mdash; image, bio, our rainbow cmd</span></a>
+        <a href="https://github.com/bunnie/dc34-api" target="_blank" rel="noopener">bunnie/dc34&#8209;api<span>IPC + light&#8209;gene definitions</span></a>
+        <a href="https://github.com/bunnie/dc34-image" target="_blank" rel="noopener">bunnie/dc34&#8209;image<span>the screen image uploader</span></a>
+        <a href="https://github.com/betrusted-io/xous-core/tree/dev" target="_blank" rel="noopener">betrusted&#8209;io/xous&#8209;core<span>the OS &mdash; branch: dev</span></a>
+        <a href="https://github.com/baochip/baochip-1x" target="_blank" rel="noopener">baochip/baochip&#8209;1x<span>the transparent SoC</span></a>
+      </div>
+    </article>
+
+  </section>
+  <footer>Baosec_lite &middot; vendor Baochip &middot; assembled live at DEF&nbsp;CON 34</footer>
+</div>

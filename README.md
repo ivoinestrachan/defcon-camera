@@ -24,6 +24,38 @@
 
 * * *
 
+## Why I built this
+
+Everyone's badge was doing the same two things: **scanning QR codes and blinking lights.** The whole
+social ritual at DEF CON is a slow QR handshake — find someone, line up the cameras, wait for the scan
+to catch, *then* you've "met." Everyone doing the exact same dance.
+
+But there's a **real camera** in the badge, and the only thing anyone pointed it at was a QR code.
+Nobody was taking *photos* — all that hardware used as a barcode reader. I didn't want to scan people's
+codes; it's slow, and it's what everyone else was already doing. I wanted to be **faster**, and I wanted
+the camera to do something nobody was using it for: point it at a person, press a button, done.
+**Turn the scanner into a camera.**
+
+### How I hacked it
+
+The badge was already *seeing* — it just never *kept* anything. So the hack was about getting a picture
+off it:
+
+- Got onto the badge's **serial console** and poked at the firmware directly.
+- Found the camera was already running: `bao-video` pulled frames off the sensor constantly, but only
+  to find **QR finder patterns** and draw a viewfinder. The pixels sat in a buffer, then got thrown away.
+- Added a **"take a photo"** command that grabs one of those frames and **dumps it back out over the
+  same serial console** the firmware was already logging to (hex text, framed `PHOTOSTART … PHOTOEND`) —
+  no new hardware path, just reusing the channel that was already open.
+- Wrote a laptop-side bridge (`capture.py`) that catches the dump, rebuilds the image, cleans it up,
+  and throws it onto a **live photo wall**.
+- Made the LEDs mine too, and froze them during a capture so glare wouldn't wreck the shot.
+
+Press the button → your face develops onto the wall in a couple seconds. No handshake, no waiting for a
+scan. The fastest camera in the room.
+
+* * *
+
 ## Overview
 
 <div align="center">
@@ -36,6 +68,36 @@
 | [`capture.py`](./capture.py) | Host bridge: reads a frame off serial, sharpens it, uploads it to the gallery. |
 | [`deploy/`](./deploy) | launchd config to keep the bridge always-on (macOS). |
 | **Gallery** | A separate project — see [The gallery](#the-gallery). |
+
+* * *
+
+## How it works
+
+The badge runs **[Xous](https://github.com/betrusted-io/xous-core)**, a microkernel OS: every piece of
+hardware is owned by an independent **service**, and services talk by passing **opcodes** (numbered
+messages) — nothing shares memory, you send a message and a service reacts. Three services matter here:
+`bao-video` (owns the camera), the LED server (owns the ring), and `dc34-console` (a shell you reach
+over serial).
+
+**The key move:** the badge *already* streams text over USB — its log/console. So instead of building a
+new USB transport to move image bytes (hard), the photo is emitted as hex **text** through the existing
+log (`log::info!`). A transport problem became an encoding problem, because encoding was free and
+transport was expensive.
+
+A photo then flows in five steps:
+
+1. **Trigger** — the camera button, or `test photo` on the console.
+2. **Message** — that sends the `CapturePhoto` opcode (added to the shared `ux-api`) to `bao-video`.
+3. **Dump** — `bao-video` grabs the next settled frame and prints `PHOTOSTART w h` / `PHOTO <hex>` /
+   `PHOTOEND`, downsampled 2× so it's small enough to be fast.
+4. **Bridge** — `capture.py` reads the serial stream, reassembles the frame, enhances it, and uploads
+   the PNG (reconnecting when the USB-CDC port glitches).
+5. **Wall** — the gallery stores it and AI-upscales it, so a 128×120 grab looks sharp.
+
+The `PHOTOSTART`/`PHOTOEND` markers make the stream **self-synchronizing** — join mid-frame or drop a
+line and the parser just waits for the next `PHOTOSTART`. And because the LEDs and camera share a few
+centimeters of air, a `MOTION_PAUSE` flag **freezes the ring during a capture** so glare doesn't pollute
+the frame — the software says "independent," the physics says "coupled."
 
 * * *
 
@@ -221,6 +283,18 @@ Trade-offs: 800×600 is ~25× the pixels of 128×120, so the frame buffer (RAM/I
 each serial dump takes much longer. `capture.py` already handles any frame size, so the host side
 needs no changes.
 
+### Can it record video?
+
+Sort of — but not really, and it's the serial channel's fault, not the sensor's. The GC2145 does 30 fps
+and `bao-video` already grabs frames continuously, so the badge can *see* video fine. The bottleneck is
+**getting frames off the badge**: a single 128×120 frame is ~30 KB of hex text, and at 115200 baud
+that's a couple seconds per frame — so streaming over the log tops out well under 1 fps. That's a
+**choppy timelapse / stop-motion**, not smooth video.
+
+Real video would mean a **faster transport** — binary USB (CDC/bulk) instead of hex-over-log — or
+recording to on-device storage and offloading later. Both are real projects, not tweaks. As built:
+bursts and timelapses yes, smooth video no.
+
 ### How the "resolution thing" works on the website
 
 The native grab is tiny, so the **sharp, big photos on the wall come from the host + gallery**, not
@@ -244,6 +318,23 @@ Two knobs:
 - **In firmware (rebuild):** `motion.rs` sets the base tempo — *"milliseconds per color flip; 80 ms is
   the proven-stable rate"* — alongside the `cd_rate` / `hue_ratedir` params in `cmds/test.rs`. Change
   and reflash to retune.
+
+## Design notes
+
+Why it's shaped the way it is:
+
+- **Constraints first.** No wifi, tiny RAM, slow serial, an un-brickable ROM bootloader — the whole
+  design falls out of these before any code gets written.
+- **Reuse the channel, don't build one.** The image rides the log stream that was already flowing.
+  Leverage over labor.
+- **Speak the system's grammar.** A new capability is always: add an opcode, send it, handle it. Same
+  recipe every time.
+- **Respect boundaries you can't see.** Sharing the accelerometer with the LEDs broke sleep/wake —
+  ownership is load-bearing, so the LED driver stays "LEDs only."
+- **Spend resource where it's cheap.** Capture small on the badge; manufacture the resolution downstream
+  where compute is abundant.
+- **Design for the failure path.** Self-syncing frame markers and a bridge that reconnects — desync and
+  disconnect are assumed, not hoped against.
 
 ## The gallery
 

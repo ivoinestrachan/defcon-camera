@@ -116,10 +116,9 @@ Entry can be finicky — use a short **data** USB-C cable and retry. The ROM boo
 so a bad flash is recoverable, not a brick.
 
 <div align="center">
-<img src="https://placehold.co/900x300/0d0f1e/5aa2ff/png?text=BOOT+MODE" alt="boot mode photo — replace me" width="640" /><br/>
-<sub><b>Shot to take:</b> the <code>BAOCHIP</code> drive on your computer with the badge plugged in.</sub>
+<img src="assets/boot-mode.jpg" alt="badge plugged in over USB-C, OLED showing the bao logo and Connected" width="440" /><br/>
+<sub>The badge plugged in over a data USB-C cable — <code>Connected</code> on the OLED, ready to flash.</sub>
 </div>
-<!-- Replace the src with assets/boot-mode.png -->
 
 </details>
 
@@ -178,12 +177,6 @@ streams over serial, and it lands on your [gallery wall](#the-gallery).
 - `dc34-console/src/leds.rs` — registers the LED server and drives the `Lightgenes` generative animation.
 - `dc34-console/src/motion.rs` — a dot races the ring, then it flashes, on repeat, and a `MOTION_PAUSE`
   flag freezes the LEDs during a capture.
-
-<div align="center">
-<img src="https://placehold.co/900x300/0d0f1e/ff9e40/png?text=LED+RING" alt="LED show photo — replace me" width="640" /><br/>
-<sub><b>Shot to take:</b> the LED ring mid-show — the racing dot / rainbow chase (a gif is even better).</sub>
-</div>
-<!-- Replace the src with assets/leds.gif or assets/leds.png -->
 
 </details>
 

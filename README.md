@@ -4,15 +4,15 @@
 
 ### Turn your DEF CON badge into a camera.
 
-<img src="https://placehold.co/1000x360/0d0f1e/ff2d55/png?text=HERO+PHOTO" alt="hero photo — replace me" width="720" /><br/>
-<sub><b>Shot to take:</b> the badge in-hand, LED ring lit, a few 1-bit prints fanned beside it.</sub>
-<!-- Replace the src above with assets/hero.png or assets/hero.gif once you've taken it. -->
+<img src="assets/hero.jpg" alt="DEF CON 34 badge, LED ring lit, camera mode showing a fox on the OLED" width="720" /><br/>
+<sub>The DEF CON 34 badge in camera mode — LED ring lit, a shot developing on the OLED.</sub>
 
 <p align="center">
   <a href="https://defcon-polaroid.vercel.app"><img src="https://img.shields.io/badge/Live_Gallery-online-ff2d55?style=for-the-badge" alt="Live Gallery"></a>
   <img src="https://img.shields.io/badge/DEF_CON-34-000000?style=for-the-badge" alt="DEF CON 34">
   <img src="https://img.shields.io/badge/SoC-Baochip_bao1x-6e40c9?style=for-the-badge" alt="Baochip bao1x">
   <img src="https://img.shields.io/badge/OS-Xous-2b7489?style=for-the-badge" alt="Xous">
+  <img src="https://img.shields.io/github/last-commit/ivoinestrachan/defcon-camera?style=for-the-badge&label=updated&color=39d98a" alt="Last updated">
 </p>
 
 </div>
@@ -156,10 +156,9 @@ a systemd user service.
 streams over serial, and it lands on your [gallery wall](#the-gallery).
 
 <div align="center">
-<img src="https://placehold.co/900x300/0d0f1e/39d98a/png?text=SAMPLE+SHOTS" alt="sample captures — replace me" width="640" /><br/>
-<sub><b>Shot to take:</b> a grid of a few 1-bit photos the badge actually took.</sub>
+<img src="assets/samples.jpg" alt="badge held in-hand, camera capturing a silhouette on the OLED" width="440" /><br/>
+<sub>Point it at a person, press the button — the shot lands on the OLED, then the wall.</sub>
 </div>
-<!-- Replace the src with assets/samples.png -->
 
 * * *
 
